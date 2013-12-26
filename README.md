@@ -5,6 +5,7 @@ Apex_MultipleUsersFrozen
 - Searchボタンでユーザを検索します。  
 - チェックを付けてUpdate Frozenボタンをクリックするとユーザが凍結されます。  
 - 凍結済みのユーザの場合は凍結解除されます。  
+- UpdateにはSoap APIを使用しています。
   
 次のサイトを参考にしています。  
 > Freezing Users from Visualforce  
