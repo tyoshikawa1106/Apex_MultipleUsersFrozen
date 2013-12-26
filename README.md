@@ -4,7 +4,7 @@ Apex_MultipleUsersFrozen
 ユーザの一括凍結機能です。  
 - Searchボタンでユーザを検索します。  
 - チェックを付けてUpdate Frozenボタンをクリックするとユーザが凍結されます。  
-- 凍結済みのユーザの場合は解凍されます。  
+- 凍結済みのユーザの場合は凍結解除されます。  
   
 次のサイトを参考にしています。  
 > Freezing Users from Visualforce  
