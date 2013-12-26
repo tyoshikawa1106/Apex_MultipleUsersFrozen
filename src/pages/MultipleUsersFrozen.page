@@ -1,0 +1,122 @@
+<apex:page controller="MultipleUsersFrozenController" title="MultipleUsersFrozen" showHeader="true" sidebar="true" tabStyle="User" id="page">
+    <script type="text/javascript">
+        var __sfdcSessionId = '{!GETSESSIONID()}';
+    </script>
+    <script src="../../soap/ajax/29.0/connection.js" type="text/javascript"></script>
+    <apex:sectionHeader Title="Force.com" subtitle="Multiple Users Frozen" />
+    <apex:form id="form">
+        <apex:actionFunction name="refreshSearch" action="{!doSearch}" reRender="form" />
+        <apex:pageBlock id="block">
+            <apex:pageBlockButtons location="top" id="blockButtons">
+                <apex:commandButton value="Search" title="Search" action="{!doSearch}" reRender="form" id="search"/>
+                <apex:commandButton value="Update Frozen" title="Update Frozen" onClick="return changeFrozen('{!$Component.page:form.block.section_results.blockTable}', '{!wrappers.size}');" rendered="{!wrappers.size > 0}" id="update_frozen"/>
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection title="Search Condition" collapsible="false" columns="2" id="section_search">
+                <apex:inputField value="{!user.LastName}" required="false" id="input_lastName"/>
+                <apex:inputField value="{!user.FirstName}" id="input_firstName"/>
+                <apex:inputField value="{!user.Email}" required="false" id="input_email"/>
+                <apex:inputField value="{!user.Department}" id="input_department"/>
+                <apex:inputField value="{!user.Title}" id="input_title"/>
+                <apex:inputField value="{!user.UserRoleId}" id="input_userRoleId"/>
+                <apex:inputField value="{!user.ProfileId}" required="false" id="input_profileId"/>
+                <apex:pageBlockSectionItem id="sectionitem_isFrozen">
+                    <apex:outputText value="{!$ObjectType.UserLogin.Fields.IsFrozen.Label}" />
+                    <apex:inputCheckBox value="{!isFrozen}" id="isFrozen"/>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="User's" collapsible="false" columns="1" rendered="{!wrappers.size > 0}" id="section_results">
+                <apex:pageBlockTable value="{!wrappers}" var="item" id="blockTable">
+                    <apex:column id="column_checked">
+                        <apex:facet name="header">
+                            <apex:inputCheckBox value="{!isCheckedHeader}" onClick="changeCheckedHeader('{!$Component.page:form.block.section_results.blockTable}', '{!wrappers.size}');" id="isCheckHeader"/>
+                        </apex:facet>
+                        <apex:inputCheckBox value="{!item.isChecked}" onClick="changeCheckedColumn('{!$Component.page:form.block.section_results}');" id="isChecked"/>
+                    </apex:column>
+                    <apex:column headerValue="{!$ObjectType.User.Fields.Name.Label}" id="column_Name">
+                        <apex:outputLink value="/{!item.user.Id}" id="link_userId">
+                            <apex:outputField value="{!item.user.Name}" id="userName"/>
+                        </apex:outputLink>
+                    </apex:column>
+                    <apex:column headerValue="{!$ObjectType.User.Fields.Email.Label}" id="column_email">
+                        <apex:outputField value="{!item.user.Email}" id="email"/>
+                    </apex:column>
+                    <apex:column headerValue="{!$ObjectType.User.Fields.Department.Label}" id="column_department">
+                        <apex:outputField value="{!item.user.Department}" id="department"/>
+                    </apex:column>
+                    <apex:column headerValue="{!$ObjectType.User.Fields.Title.Label}" id="column_title">
+                        <apex:outputField value="{!item.user.Title}" id="title"/>
+                    </apex:column>
+                    <apex:column headerValue="{!$ObjectType.User.Fields.UserRoleId.Label}" id="column_userRoleId">
+                        <apex:outputField value="{!item.user.UserRoleId}" id="userRoleId"/>
+                    </apex:column>
+                    <apex:column headerValue="{!$ObjectType.User.Fields.ProfileId.Label}" id="column_profileId">
+                        <apex:outputField value="{!item.user.ProfileId}" id="profileId"/>
+                    </apex:column>
+                    <apex:column headerValue="{!$ObjectType.UserLogin.Fields.IsFrozen.Label}" id="column_isFrozen">
+                        <apex:inputHidden value="{!item.userLogin.Id}" id="hiddenUserLoginId" />
+                        <apex:inputHidden value="{!item.userLogin.IsFrozen}" id="hiddenIsFrozen" />
+                        <apex:outputField value="{!item.userLogin.IsFrozen}" id="isFrozen"/>
+                    </apex:column>
+                </apex:pageBlockTable>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:form>
+    <script>
+        /**
+         * Update Frozen
+         */
+        function changeFrozen(blockTableId, listSize) {
+        
+            var updateRecords = [];
+            
+            for (var i = 0; i < listSize; i++) {
+                
+                var columnChecked = document.getElementById(blockTableId + ':' + i + ':isChecked');
+                if (columnChecked.checked) {
+                    var uLoginId = document.getElementById(blockTableId + ':' + i + ':hiddenUserLoginId');
+                    var uLoginIsFrozen = document.getElementById(blockTableId + ':' + i + ':hiddenIsFrozen');
+                    
+                    // Change IsFrozen
+                    var userlogin = new sforce.SObject("UserLogin");
+                    userlogin.Id = uLoginId.value;
+                    userlogin.IsFrozen = uLoginIsFrozen.value == 'true' ? false : true;
+                    
+                    updateRecords.push(userlogin);
+                }
+            }
+            
+            if (updateRecords.length == 0) {
+                alert('Please select a Records.');
+                return false;
+            }
+            
+            // Update
+            var results = sforce.connection.update(updateRecords);
+            alert('OK !!');
+            
+            refreshSearch();
+            return false;
+        }
+        
+        /**
+         * Checked HeaderCheckBox
+         */
+        function changeCheckedHeader(blockTableId, listSize) {
+            var hederElement = document.getElementById(blockTableId + ':isCheckHeader');
+            for (var i = 0; i < listSize; i++) {
+                var columnChecked = document.getElementById(blockTableId + ':' + i + ':isChecked');
+                columnChecked.checked = hederElement.checked;
+            }
+            return false;
+        }
+        
+        /**
+         * Checked ColumnCheckBox
+         */
+        function changeCheckedColumn(resultSectionId) {
+            var hederElement = document.getElementById(resultSectionId + ':blockTable:isCheckHeader');
+            hederElement.checked = false;
+            return false;
+        }
+    </script>
+</apex:page>
