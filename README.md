@@ -11,6 +11,7 @@ Apex_MultipleUsersFrozen
 > Freezing Users from Visualforce  
 > http://bobbuzzard.blogspot.jp/2013/11/freezing-users-from-visualforce.html  
   
+  
 <img src="http://cdn-ak.f.st-hatena.com/images/fotolife/t/tyoshikawa1106/20131227/20131227013614.png" />  
   
 > Package URL  
